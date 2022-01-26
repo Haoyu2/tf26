@@ -1,0 +1,61 @@
+Beginning testing <bound method KMeans.fit of KMeans(n_clusters=2)> on size of 
+1024. Time: 0:00:00.022940
+
+Beginning testing <bound method KMeans.fit of KMeans(n_clusters=2)> on size of 
+2048. Time: 0:00:00.020944
+
+Beginning testing <bound method KMeans.fit of KMeans(n_clusters=2)> on size of 
+4096. Time: 0:00:00.011968
+
+Beginning testing <bound method KMeans.fit of KMeans(n_clusters=2)> on size of 
+8192. Time: 0:00:00.014960
+
+Beginning testing <bound method KMeans.fit of KMeans(n_clusters=2)> on size of 
+16384. Time: 0:00:00.033909
+
+Beginning testing <bound method KMeans.fit of KMeans(n_clusters=2)> on size of 
+32768. Time: 0:00:00.042885
+
+Beginning testing <bound method KMeans.fit of KMeans(n_clusters=2)> on size of 
+65536. Time: 0:00:00.075155
+
+Beginning testing <bound method KMeans.fit of KMeans(n_clusters=2)> on size of 
+131072. Time: 0:00:00.170544
+
+Beginning testing <bound method KMeans.fit of KMeans(n_clusters=2)> on size of 
+262144. Time: 0:00:00.277258
+
+Beginning testing <bound method KMeans.fit of KMeans(n_clusters=2)> on size of 
+524288. Time: 0:00:00.540554
+
+Beginning testing <bound method KMeans.fit of KMeans(n_clusters=2)> on size of 
+1048576. Time: 0:00:01.668846
+
+Beginning testing <bound method KMeans.fit of KMeans(n_clusters=2)> on size of 
+2097152. Time: 0:00:02.617970
+
+Beginning testing <bound method KMeans.fit of KMeans(n_clusters=2)> on size of 
+4194304. Time: 0:00:07.295590
+
+Beginning testing <bound method KMeans.fit of KMeans(n_clusters=2)> on size of 
+8388608. Time: 0:00:09.059159
+
+Beginning testing <bound method KMeans.fit of KMeans(n_clusters=2)> on size of 
+16777216. Time: 0:00:16.545599
+
+Beginning testing <bound method KMeans.fit of KMeans(n_clusters=2)> on size of 
+33554432. Time: 0:00:32.197687
+
+Beginning testing <bound method KMeans.fit of KMeans(n_clusters=2)> on size of 
+67108864. Time: 0:01:04.058002
+
+Beginning testing <bound method KMeans.fit of KMeans(n_clusters=2)> on size of 
+134217728. Time: 0:02:11.702446
+
+Beginning testing <bound method KMeans.fit of KMeans(n_clusters=2)> on size of 
+268435456. Time: 0:05:10.385757
+
+Beginning testing <bound method KMeans.fit of KMeans(n_clusters=2)> on size of 
+536870912. Time: 0:22:09.758792
+
+Process finished with exit code 0
