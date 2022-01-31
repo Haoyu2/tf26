@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import datetime
-
+import numpy as np
 from rich import print
 import errno
 import math
@@ -11,6 +11,10 @@ from typing import Callable, NewType, TypeVar
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.datasets import make_blobs
+import tensorflow as tf
+from sklearn.utils.extmath import row_norms
+
+from src.clustering.kmeans import Kmeans, KMeansTF26
 
 Point = NewType('Point', list[float])
 Points = NewType('Points', list[Point])
@@ -208,18 +212,68 @@ class Make_Clusters:
 def kmeansRunTimeTesting(n_centroids, dim=2):
     make_clusters = Make_Clusters(n_centroids, dim)
     kmeans = KMeans(n_clusters=n_centroids).fit
+    kmeans1 = Kmeans(n_clusters=n_centroids).fit
+    kmeans2 = KMeansTF26(n_clusters=n_centroids).fit
     kmeans_testing = RTComparisions(
-        [kmeans],
-        [2**i  for i in range(10, 30)],
+        [kmeans, kmeans1, kmeans2],
+        [2**i  for i in range(4, 15)],
         make_clusters
     )
     kmeans_testing.show()
 
+def kmeansTesting(n_centroids, dim=2):
+    points = Make_Clusters(n_centroids, dim)(100)
+    xs, ys = zip(*points)
+    plt.scatter(xs, ys)
+    s = 1
+    kmeans = KMeans(n_clusters=n_centroids).fit(points)
+    # kmeans1 = Kmeans(n_clusters=n_centroids).fit(points)
+
+    kmeans3 =  KMeansTF26(n_clusters=n_centroids).fit(tf.constant(points))
+
+    for x, y in kmeans.cluster_centers_:
+
+        plt.scatter(x, y, c = 'red', marker='*', s=22**2)
+    for x, y in kmeans3.centroids:
+        plt.scatter(x, y, c = 'black', marker='^', s=22**1.5)
+    plt.show()
 
 
 if __name__ == '__main__':
+    import os
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
+
     # draw_polynomial()
     kmeansRunTimeTesting(2)
+    # kmeansTesting(2)
     # demoRT()
     # demo_DT()
     # print(isinstance(lambda x : x, ))
+
+
+
+
+    # physical_devices = tf.config.list_physical_devices('GPU')
+    # print("Num GPUs:", len(physical_devices))
+    #
+    # mat = np.array([[1.0,2],[3,4], [5,6]])
+    # print(mat)
+    # print(mat.mean(axis=0))
+    # print(mat - mat.mean(axis=0))
+    #
+    # mat_tf = tf.constant(mat)
+    # mean_tf = tf.reduce_mean(mat, axis=0)
+    # print(tf.reduce_mean(mat, axis=0))
+    # print(mat_tf - mean_tf)
+
+    # mat -= mat.mean(axis=0)
+    # print(mat)
+    # norm = row_norms(mat, squared=True)
+    # print(norm)
+    #
+    # mask = np.random.randint(3, size=10)
+    # print(mask == 0)
+
+
+
