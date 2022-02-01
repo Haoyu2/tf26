@@ -32,10 +32,10 @@ class KMeansTF26:
             distance = self.compute_distance(X, old_centroids)
             self.labels = self.find_closest_cluster(distance)
             self.centroids = self.compute_centroids(X, self.labels)
-            print(old_centroids)
-            print()
-            print(self.centroids)
-            print(old_centroids - self.centroids)
+            # print(old_centroids)
+            # print()
+            # print(self.centroids)
+            # print(old_centroids - self.centroids)
             if tf.reduce_sum(tf.abs(old_centroids - self.centroids)) < self.n_clusters :
                 break
         return self

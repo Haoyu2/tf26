@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import datetime
+import json
+
 import numpy as np
 from rich import print
 import errno
@@ -80,25 +82,41 @@ def polynomial(xs, y0, n):
     return [a * x ** n for x in xs]
 
 
-def plot_lines(xs, results, loglog=True):
-    fig, (ax0, ax1) = plt.subplots(nrows=1, ncols=2, sharex=True)
+def plot_lines(xs, results, names, loglog=True):
+    fig, (ax0, ax1) = plt.subplots(nrows=1, ncols=2, sharex=True, figsize=(15, 6), dpi=80)
+
     # ax1.set_titile('Common running time')
     if loglog:
 
         xs_log = [math.log(x) for x in xs]
-        for res in results:
-            ax0.plot(xs_log, [math.log(y) for y in res])
-
+        for res, name in zip(results, names):
+            ax0.plot(xs_log, [math.log(y + 0.000000001) for y in res], label=name)
+        ax0.legend()
         # Comparison
-        yss = [polynomial(xs, xs[0], i) for i in range(0, 6)]
+        polys = [f'Power of {i}' for i in range(0, 4)]
+
+        yss = [polynomial(xs, xs[0], i) for i in range(0, 4)]
         yss.append(logrithmic(xs, xs[0]))
         yss.append(linearithmic(xs, xs[0]))
-        for res in yss:
-            ax1.plot(xs_log, [math.log(y) for y in res])
+
+        for res, name in zip(yss, polys):
+            ax1.plot(xs_log, [math.log(y) for y in res], label = name)
+        ax1.legend()
         plt.show()
     else:
-        for res in results:
-            plt.plot(xs, res)
+        xs_log = [x for x in xs]
+        for res, name in zip(results, names):
+            ax0.plot(xs_log, [y for y in res], label=name)
+        ax0.legend()
+
+        # Comparison
+        yss = [polynomial(xs, xs[0], i) for i in range(0, 4)]
+        polys = [f'Power of {i}' for i in range(0, 4)]
+        # yss.append(logrithmic(xs, xs[0]))
+        # yss.append(linearithmic(xs, xs[0]))
+        for res, name in zip(yss, polys):
+            ax1.plot(xs_log, [y for y in res], label=name)
+        ax1.legend()
         plt.show()
 
     pass
@@ -106,6 +124,7 @@ def plot_lines(xs, results, loglog=True):
 
 class DoublingTest:
     def __init__(self,
+                 name: str,
                  func: Func,
                  args: iter[int],
                  factory: ArgsFactory = None
@@ -117,6 +136,7 @@ class DoublingTest:
         :param args: integer array which doubles its value
         :param factory:
         '''
+        self.name = name
         self.func = func
         self.args = args
         self.factory = factory
@@ -130,18 +150,21 @@ class DoublingTest:
         #     raise errno
         self.ys = []
         N = len(self.args)
-        for i,  (arg, size) in enumerate(zip(self.iter_args, self.args)):
+        for i, (arg, size) in enumerate(zip(self.iter_args, self.args)):
             print(f'Beginning testing {i}/{N} of {self.func} on size of 2 ** {int(math.log(size)):3}. Time: ', end='')
             start = time.time()
             self.func(arg)
             self.ys.append(time.time() - start)
-            print(str(datetime.timedelta(seconds=self.ys[-1])) )
+            print(str(datetime.timedelta(seconds=self.ys[-1])))
+
+
         return self.ys
 
     def show(self) -> None:
         if len(self.ys) == 0: self.testing()
         xs = list(self.args)
         plt.plot(xs, self.ys)
+        plt.title = self.name
         plt.show()
 
     @property
@@ -151,29 +174,43 @@ class DoublingTest:
 
 class RTComparisions:
     def __init__(self,
+                 names: list[str],
                  funcs: list[Func],
                  args: iter[int],
                  factory: ArgsFactory = None
                  ) -> None:
+        self.names = names
         self.funcs = funcs
         self.args = args
         self.factory = factory
 
     def show(self):
-        tests = [DoublingTest(f, self.args, self.factory) for f in self.funcs]
+        tests = [DoublingTest(name, f, self.args, self.factory) for name, f in zip(self.names, self.funcs)]
         xs = list(self.args)
         results = [test.testing() for test in tests]
-        plot_lines(xs, results)
+
+        data = {'names': self.names, 'xs':xs, 'results':results}
+        self.save(data)
+        plot_lines(xs, results, self.names)
         pass
+    def save(self, data):
+        experiment = {
+            'time': datetime.datetime.now().__str__(),
+            'data': data,
+        }
+        file = f'{time.time()}.json'
+        with open(file, 'w') as f:
+            json.dump(experiment, f)
+
 
 
 
 def demo_DT():
     square = lambda x: x ** 2
-    dtest = DoublingTest(print, iter(range(8)), lambda x: x ** 2)
+    dtest = DoublingTest('print', print, iter(range(8)), lambda x: x ** 2)
     dtest.testing()
     dtest.testing()
-    dtest1 = DoublingTest(print, map(lambda x: -x, range(5)))
+    dtest1 = DoublingTest('print', print, map(lambda x: -x, range(5)))
     dtest1.testing()
 
     sleep = lambda x: time.sleep(x / 10)
@@ -203,11 +240,13 @@ def draw_polynomial():
 
 
 class Make_Clusters:
-    def __init__(self, n, dim = 2):
+    def __init__(self, n, dim=2):
         self.n = n
         self.dim = dim
+
     def __call__(self, size):
         return make_blobs(n_samples=size, n_features=self.dim, centers=self.n)[0]
+
 
 def kmeansRunTimeTesting(n_centroids, dim=2):
     make_clusters = Make_Clusters(n_centroids, dim)
@@ -215,11 +254,13 @@ def kmeansRunTimeTesting(n_centroids, dim=2):
     kmeans1 = Kmeans(n_clusters=n_centroids).fit
     kmeans2 = KMeansTF26(n_clusters=n_centroids).fit
     kmeans_testing = RTComparisions(
+        ['scikit', 'cpu', 'gpu'],
         [kmeans, kmeans1, kmeans2],
-        [2**i  for i in range(4, 15)],
+        [2 ** i for i in range(10, 25)],
         make_clusters
     )
     kmeans_testing.show()
+
 
 def kmeansTesting(n_centroids, dim=2):
     points = Make_Clusters(n_centroids, dim)(100)
@@ -229,30 +270,35 @@ def kmeansTesting(n_centroids, dim=2):
     kmeans = KMeans(n_clusters=n_centroids).fit(points)
     # kmeans1 = Kmeans(n_clusters=n_centroids).fit(points)
 
-    kmeans3 =  KMeansTF26(n_clusters=n_centroids).fit(tf.constant(points))
+    kmeans3 = KMeansTF26(n_clusters=n_centroids).fit(tf.constant(points))
 
     for x, y in kmeans.cluster_centers_:
-
-        plt.scatter(x, y, c = 'red', marker='*', s=22**2)
+        plt.scatter(x, y, c='red', marker='*', s=22 ** 2)
     for x, y in kmeans3.centroids:
-        plt.scatter(x, y, c = 'black', marker='^', s=22**1.5)
+        plt.scatter(x, y, c='black', marker='^', s=22 ** 1.5)
     plt.show()
 
+def show_plot(file = '1643696629.883552.json', loglog = False):
+
+    with open(file, 'r') as f:
+        experiment = json.load(f)
+
+    record = experiment['data']
+    data = record['xs'], record['results'], record['names']
+    plot_lines(*data,loglog=loglog)
 
 if __name__ == '__main__':
-    import os
-    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-
+    # import os
+    # os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
     # draw_polynomial()
-    kmeansRunTimeTesting(2)
+    # kmeansRunTimeTesting(3)
+    show_plot()
+
     # kmeansTesting(2)
     # demoRT()
     # demo_DT()
     # print(isinstance(lambda x : x, ))
-
-
-
 
     # physical_devices = tf.config.list_physical_devices('GPU')
     # print("Num GPUs:", len(physical_devices))
@@ -274,6 +320,3 @@ if __name__ == '__main__':
     #
     # mask = np.random.randint(3, size=10)
     # print(mask == 0)
-
-
-
