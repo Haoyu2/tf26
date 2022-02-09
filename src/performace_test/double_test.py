@@ -153,7 +153,7 @@ class DoublingTest:
         for i, (arg, size) in enumerate(zip(self.iter_args, self.args)):
             print(f'Beginning testing {i}/{N} of {self.func} on size of 2 ** {int(math.log(size)):3}. Time: ', end='')
             start = time.time()
-            self.func(arg)
+            self.func(*arg)
             self.ys.append(time.time() - start)
             print(str(datetime.timedelta(seconds=self.ys[-1])))
 
